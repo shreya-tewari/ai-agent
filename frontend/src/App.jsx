@@ -60,7 +60,7 @@ export default function App() {
     try {
 
       const response = await fetch(
-        "http://127.0.0.1:8000/generate",
+        `${import.meta.env.VITE_API_URL}/generate`,
         {
           method: "POST",
 
@@ -110,7 +110,6 @@ export default function App() {
          tone,
          length,
          language,
-         time: new Date().toLocaleTimeString(),
       };
 
        const updatedHistory = [
@@ -296,7 +295,6 @@ export default function App() {
 
     <div>
       <p>{item.query}</p>
-      <span>{item.time}</span>
     </div>
 
   </div>
