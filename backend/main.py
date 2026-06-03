@@ -46,7 +46,7 @@ async def generate(body: RequestBody):
         # Preserves markdown formatting
         for i in range(0, len(content), 4):
             yield content[i:i+4]
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.05)
 
     return StreamingResponse(
         stream(),
