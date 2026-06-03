@@ -13,7 +13,7 @@ function Generator() {
       setLoading(true);
 
       const res = await fetch(
-        "http://127.0.0.1:8000/generate",
+        `${import.meta.env.VITE_API_URL}/generate`,
         {
           method:"POST",
           headers:{
