@@ -13,7 +13,7 @@ function Generator() {
       setLoading(true);
 
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/generate`,
+        "https://ai-agent-d7x5.onrender.com/generate",
         {
           method:"POST",
           headers:{
