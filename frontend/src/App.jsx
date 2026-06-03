@@ -60,7 +60,7 @@ export default function App() {
     try {
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/generate`,
+        "https://ai-agent-d7x5.onrender.com/generate",
         {
           method: "POST",
 
