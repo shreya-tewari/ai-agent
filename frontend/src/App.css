@@ -204,7 +204,11 @@ body{
 }
 
 .hero h1{
-  font-size:72px;
+  font-size:clamp(
+    36px,
+    8vw,
+    72px
+  );
   font-weight:900;
   line-height:1.05;
 
@@ -621,4 +625,67 @@ textarea::placeholder{
 
   background:
   rgba(139,92,246,.5);
+}
+@media (max-width: 768px) {
+
+  .app{
+    flex-direction: column;
+  }
+
+  /* Hide sidebar by default on mobile */
+  .sidebar{
+    position: fixed;
+    left: -280px;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 999;
+    transition: 0.3s;
+  }
+
+  .sidebar.open{
+    left: 0;
+  }
+
+  .main{
+    width: 100%;
+    padding: 15px;
+  }
+
+  .hero h1{
+    font-size: 38px;
+    line-height: 1.2;
+    word-break: normal;
+  }
+
+  .hero p{
+    font-size: 15px;
+  }
+
+  .workspace{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .input-panel,
+  .output-panel{
+    width: 100%;
+  }
+
+  .chips{
+    flex-direction: column;
+  }
+
+  .chip-select{
+    width: 100%;
+  }
+
+  textarea{
+    height: 180px;
+  }
+
+  .output-panel{
+    height: 500px;
+  }
 }

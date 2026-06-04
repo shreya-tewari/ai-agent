@@ -199,10 +199,14 @@ export default function App() {
 
       {/* SIDEBAR */}
 
-      <div
-  className="sidebar"
+ <div
+  className={`sidebar ${
+    sidebarOpen ? "open" : "closed"
+  }`}
   style={{
-    width: `${sidebarWidth}px`
+    width: sidebarOpen
+      ? `${sidebarWidth}px`
+      : "0px"
   }}
 >
 
@@ -334,6 +338,12 @@ export default function App() {
       {/* MAIN */}
 
       <div className="main">
+        <button
+  className="mobile-menu-btn"
+  onClick={() => setSidebarOpen(!sidebarOpen)}
+>
+  ☰
+</button>
 
         {/* HERO */}
 
