@@ -626,66 +626,83 @@ textarea::placeholder{
   background:
   rgba(139,92,246,.5);
 }
+/* =========================
+   MOBILE RESPONSIVE
+========================= */
+
 @media (max-width: 768px) {
 
   .app{
-    flex-direction: column;
+    position: relative;
   }
 
-  /* Hide sidebar by default on mobile */
   .sidebar{
     position: fixed;
-    left: -280px;
+    left: 0;
     top: 0;
-    width: 280px;
     height: 100vh;
-    z-index: 999;
-    transition: 0.3s;
+    z-index: 1000;
+
+    width: 260px !important;
+
+    transform: translateX(-100%);
+    transition: 0.3s ease;
   }
 
   .sidebar.open{
-    left: 0;
+    transform: translateX(0);
   }
 
   .main{
     width: 100%;
-    padding: 15px;
+    padding: 20px;
   }
 
   .hero h1{
     font-size: 38px;
     line-height: 1.2;
-    word-break: normal;
   }
 
   .hero p{
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .workspace{
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    grid-template-columns: 1fr;
   }
 
   .input-panel,
   .output-panel{
     width: 100%;
-  }
-
-  .chips{
-    flex-direction: column;
-  }
-
-  .chip-select{
-    width: 100%;
+    padding: 18px;
   }
 
   textarea{
-    height: 180px;
+    height: 220px;
   }
+}
+.mobile-menu-btn{
+  display:none;
+}
 
-  .output-panel{
-    height: 500px;
+@media (max-width:768px){
+
+  .mobile-menu-btn{
+    display:block;
+
+    position:fixed;
+    top:15px;
+    left:15px;
+
+    z-index:1100;
+
+    border:none;
+    padding:10px 14px;
+
+    border-radius:10px;
+
+    background:#8B5CF6;
+    color:white;
+    font-size:20px;
   }
 }
