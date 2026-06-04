@@ -611,12 +611,14 @@ textarea::placeholder{
   position:absolute;
 
   top:0;
-  right:0;
+  right:-4px;
 
-  width:6px;
+  width:12px;
   height:100%;
 
   cursor:col-resize;
+  z-index:9999;
+  background:transparent;
 
   transition:.2s;
 }
