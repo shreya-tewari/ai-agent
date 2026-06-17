@@ -76,34 +76,7 @@ Return ONLY markdown.
     # ==========================
     # HASHTAGS
     # ==========================
-    elif content_type == "HASHTAGS":
-
-        prompt = f"""
-Generate EXACTLY 15 social media hashtags about:
-
-{request}
-
-Language: {language}
-
-VERY IMPORTANT:
-
-Return ONLY hashtags.
-
-Example:
-
-#AI
-#MachineLearning
-#ArtificialIntelligence
-
-Rules:
-- No title
-- No introduction
-- No explanation
-- No numbering
-- No bullets
-- No extra text
-- One hashtag per line
-"""
+ 
 
     # ==========================
     # CAPTION
