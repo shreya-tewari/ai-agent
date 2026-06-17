@@ -29,6 +29,16 @@ Write a blog in {language}.
 
 Topic:
 {request}
+Length:
+{length}
+If Length = Short:
+500-700 words
+
+If Length = Medium:
+800-1200 words
+
+If Length = Long:
+1500-2500 words
 
 IMPORTANT:
 
@@ -101,7 +111,10 @@ Rules:
     elif content_type == "CAPTION":
 
         prompt = f"""
-Generate ONE social media caption.
+Generate:
+
+1. A social media caption
+2. 10 relevant hashtags
 
 Topic:
 {request}
@@ -112,14 +125,23 @@ Tone:
 Language:
 {language}
 
+Content Length:
+{length}
+
 Rules:
-- Return ONLY caption
-- No explanation
-- No title
-- No introduction
-- No quotation marks
-- Maximum 2-3 lines
-- Add relevant emojis if suitable
+
+If Length = Short:
+- 2-3 lines
+
+If Length = Medium:
+- 5-8 lines
+
+If Length = Long:
+- 10-15 lines
+
+Include CTA.
+
+Return only final output.
 """
 
     # ==========================
@@ -163,6 +185,16 @@ Topic:
 
 Language:
 {language}
+Length:
+{length}
+If Length = Short:
+5 slides
+
+If Length = Medium:
+8 slides
+
+If Length = Long:
+12-15 slides
 
 Return ONLY slides.
 
