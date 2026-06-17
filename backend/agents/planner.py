@@ -6,17 +6,10 @@ def planner(state):
         .strip()
     )
 
-    # HASHTAGS
-    if (
-        "hashtag" in query
-        or "hashtags" in query
-        or "#" in query
-    ):
-
-        state["content_type"] = "HASHTAGS"
+    
 
     # CAPTION
-    elif (
+    if (
         "caption" in query
         or "instagram caption" in query
     ):
