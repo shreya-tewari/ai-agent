@@ -84,10 +84,15 @@ Return ONLY markdown.
     elif content_type == "CAPTION":
 
         prompt = f"""
-Generate:
+You MUST generate TWO sections.
 
-1. A social media caption
-2. 10 relevant hashtags
+SECTION 1: CAPTION
+
+Write an engaging professional social media caption.
+
+SECTION 2: HASHTAGS
+
+Generate exactly 10 relevant hashtags.
 
 Topic:
 {request}
@@ -112,9 +117,28 @@ If Length = Medium:
 If Length = Long:
 - 10-15 lines
 
-Include CTA.
+IMPORTANT:
 
-Return only final output.
+Output format MUST be:
+
+CAPTION:
+<caption here>
+
+HASHTAGS:
+#tag1
+#tag2
+#tag3
+#tag4
+#tag5
+#tag6
+#tag7
+#tag8
+#tag9
+#tag10
+
+Do NOT return hashtags only.
+Do NOT skip the caption.
+
 """
 
     # ==========================
