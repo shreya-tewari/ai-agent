@@ -17,6 +17,8 @@ import "./App.css";
 
 export default function App() {
 
+  const [followup, setFollowup] =
+    useState("");
   const [query, setQuery] =
     useState("");
 
@@ -138,7 +140,74 @@ export default function App() {
     setLoading(false);
 
   };
+  const askFollowup = async () => {
 
+  if (!followup.trim()) return;
+
+  try {
+
+    const response = await fetch(
+      "https://ai-agent-d7x5.onrender.com/followup",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          content: result,
+          question: followup,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    setResult(data.output);
+
+    setFollowup("");
+
+  } catch (err) {
+
+    console.error(err);
+
+  }
+
+};
+
+
+const refineContent = async (action) => {
+
+  try {
+
+    const response = await fetch(
+      "https://ai-agent-d7x5.onrender.com/refine",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          content: result,
+          action,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    setResult(data.output);
+
+  } catch (err) {
+
+    console.error(err);
+
+  }
+
+};
   const copyContent = () => {
 
     navigator.clipboard.writeText(
@@ -560,6 +629,62 @@ export default function App() {
               }
 
             </div>
+
+            {result && (
+
+  <>
+    <div className="refine-actions">
+
+      <button
+        onClick={() =>
+          refineContent("Expand")
+        }
+      >
+        Expand
+      </button>
+
+      <button
+        onClick={() =>
+          refineContent("Rewrite")
+        }
+      >
+        Rewrite
+      </button>
+
+      <button
+        onClick={() =>
+          refineContent("Improve SEO")
+        }
+      >
+        Improve SEO
+      </button>
+
+    </div>
+
+    <div className="followup-box">
+
+      <input
+        type="text"
+        placeholder="Ask a follow-up question..."
+        value={followup}
+        onChange={(e) =>
+          setFollowup(
+            e.target.value
+          )
+        }
+      />
+
+      <button
+        onClick={askFollowup}
+      >
+        Ask
+      </button>
+
+    </div>
+
+  </>
+
+)}
 
           </div>
 

@@ -708,3 +708,60 @@ textarea::placeholder{
     font-size:20px;
   }
 }
+.refine-actions{
+
+  display:flex;
+
+  gap:10px;
+
+  margin-top:20px;
+
+  flex-wrap:wrap;
+
+}
+
+.refine-actions button{
+
+  padding:10px 16px;
+
+  border:none;
+
+  border-radius:10px;
+
+  cursor:pointer;
+
+}
+
+.followup-box{
+
+  display:flex;
+
+  gap:10px;
+
+  margin-top:20px;
+
+}
+
+.followup-box input{
+
+  flex:1;
+
+  padding:12px;
+
+  border-radius:10px;
+
+  border:1px solid #ddd;
+
+}
+
+.followup-box button{
+
+  padding:12px 20px;
+
+  border:none;
+
+  border-radius:10px;
+
+  cursor:pointer;
+
+}
