@@ -712,24 +712,41 @@ textarea::placeholder{
 
   display:flex;
 
-  gap:10px;
+  gap:12px;
 
   margin-top:20px;
 
   flex-wrap:wrap;
-
 }
 
 .refine-actions button{
 
-  padding:10px 16px;
+  padding:12px 18px;
 
   border:none;
 
-  border-radius:10px;
+  border-radius:12px;
 
   cursor:pointer;
 
+  background:linear-gradient(
+    135deg,
+    #8B5CF6,
+    #6366F1
+  );
+
+  color:white;
+
+  font-weight:600;
+
+  transition:.3s;
+}
+
+.refine-actions button:hover{
+
+  transform:translateY(-2px);
+
+  opacity:.9;
 }
 
 .followup-box{
@@ -739,29 +756,47 @@ textarea::placeholder{
   gap:10px;
 
   margin-top:20px;
-
 }
 
 .followup-box input{
 
   flex:1;
 
-  padding:12px;
+  padding:14px;
 
-  border-radius:10px;
+  border-radius:12px;
 
-  border:1px solid #ddd;
+  border:1px solid rgba(255,255,255,.15);
 
+  background:rgba(255,255,255,.08);
+
+  color:white;
+
+  outline:none;
+}
+
+.followup-box input::placeholder{
+
+  color:#bdbdbd;
 }
 
 .followup-box button{
 
-  padding:12px 20px;
+  padding:14px 20px;
 
   border:none;
 
-  border-radius:10px;
+  border-radius:12px;
+
+  background:linear-gradient(
+    135deg,
+    #8B5CF6,
+    #3B82F6
+  );
+
+  color:white;
+
+  font-weight:600;
 
   cursor:pointer;
-
 }
