@@ -25,6 +25,9 @@ export default function App() {
   const [loading, setLoading] =
     useState(false);
 
+  const [result, setResult] =
+  useState("");
+
   const [messages, setMessages] =
   useState([]);
 
