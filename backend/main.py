@@ -6,6 +6,7 @@ from pydantic import BaseModel
 import asyncio
 
 from graph import graph
+from agents.content import llm
 
 app = FastAPI()
 
@@ -24,6 +25,14 @@ class RequestBody(BaseModel):
     length: str
     language: str
 
+class FollowupRequest(BaseModel):
+    content: str
+    question: str
+
+
+class RefineRequest(BaseModel):
+    content: str
+    action: str
 
 @app.post("/generate")
 async def generate(body: RequestBody):
@@ -52,3 +61,45 @@ async def generate(body: RequestBody):
         stream(),
         media_type="text/plain"
     )
+@app.post("/followup")
+async def followup(body: FollowupRequest):
+
+    prompt = f"""
+Generated Content:
+
+{body.content}
+
+User Question:
+
+{body.question}
+
+Answer the user's question based on the generated content.
+"""
+
+    response = llm.invoke(prompt)
+
+    return {
+        "output": response.content
+    }
+@app.post("/refine")
+async def refine(body: RefineRequest):
+
+    prompt = f"""
+Existing Content:
+
+{body.content}
+
+Task:
+
+{body.action}
+
+Improve the content according to the task.
+
+Return only the updated content.
+"""
+
+    response = llm.invoke(prompt)
+
+    return {
+        "output": response.content
+    }
