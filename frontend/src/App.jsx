@@ -25,8 +25,8 @@ export default function App() {
   const [loading, setLoading] =
     useState(false);
 
-  const [result, setResult] =
-    useState("");
+  const [messages, setMessages] =
+  useState([]);
 
   const [history, setHistory] = useState(() => {
      const saved = localStorage.getItem("chatHistory");
@@ -164,7 +164,15 @@ export default function App() {
 
     const data = await response.json();
 
-    setResult(data.output);
+    setResult(
+  result +
+  "\n\n---\n\n" +
+  "### Question\n" +
+  followup +
+  "\n\n" +
+  "### Answer\n" +
+  data.output
+);
 
     setFollowup("");
 
@@ -199,7 +207,14 @@ const refineContent = async (action) => {
 
     const data = await response.json();
 
-    setResult(data.output);
+    setResult(
+  result +
+  "\n\n---\n\n" +
+  "### Action: " +
+  action +
+  "\n\n" +
+  data.output
+);
 
   } catch (err) {
 
