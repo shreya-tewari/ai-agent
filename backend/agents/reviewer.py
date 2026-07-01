@@ -1,36 +1,45 @@
-from dotenv import load_dotenv
-from langchain_groq import ChatGroq
+import logging
 
-load_dotenv()
+from llm_client import llm
 
-llm = ChatGroq(
-    model="llama-3.3-70b-versatile"
-)
+logger = logging.getLogger(__name__)
+
+# Content types whose output is either structured (CAPTION's JSON), too
+# short to meaningfully "review" (HASHTAGS), or not text at all (IMAGE).
+# Running a prose-polish prompt on these would corrupt the format.
+_SKIP_REVIEW_TYPES = {"IMAGE", "CAPTION", "HASHTAGS"}
+
 
 def reviewer(state):
+    content_type = state.get("content_type")
+    content = state.get("content")
 
-    content = state["content"]
+    if content_type in _SKIP_REVIEW_TYPES or not content or state.get("error"):
+        return state
 
     prompt = f"""
-    Improve the following content.
+Improve the following content.
 
-    Requirements:
+Requirements:
+- Keep the same meaning and structure
+- Professional tone
+- Better readability
+- Better grammar
+- Preserve markdown headings and formatting exactly (# ## - etc.)
 
-    - Professional tone
-    - Better readability
-    - Better grammar
-    - Better formatting
-    - Keep markdown headings
+Content:
+{content}
 
-    Content:
+Return only the final improved content, nothing else.
+"""
 
-    {content}
-
-    Return only final improved content.
-    """
-
-    response = llm.invoke(prompt)
-
-    state["final_output"] = response.content
+    try:
+        response = llm.invoke(prompt)
+        state["draft_content"] = content  # keep pre-review version for comparison
+        state["content"] = response.content.strip()
+        state["error"] = None
+    except Exception as e:
+        # If review fails, keep the writer's original output rather than losing it.
+        logger.error(f"Reviewer failed, keeping unreviewed content: {e}")
 
     return state

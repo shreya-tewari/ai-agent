@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import ReactMarkdown from "react-markdown";
 
@@ -15,6 +15,8 @@ import {
 
 import "./App.css";
 
+const API_BASE = "https://ai-agent-d7x5.onrender.com";
+
 export default function App() {
 
   const [followup, setFollowup] =
@@ -27,6 +29,17 @@ export default function App() {
 
   const [result, setResult] =
   useState("");
+
+  // IMAGE and CAPTION responses aren't plain streamed text, so they get
+  // their own state instead of being force-fit into `result`.
+  const [imageBase64, setImageBase64] =
+  useState(null);
+
+  const [caption, setCaption] =
+  useState(null);
+
+  const [hashtags, setHashtags] =
+  useState([]);
 
   const [messages, setMessages] =
   useState([]);
@@ -54,6 +67,24 @@ export default function App() {
   const [sidebarWidth, setSidebarWidth] =
   useState(260);
 
+  const [followupLoading, setFollowupLoading] =
+  useState(false);
+
+  const [refineLoading, setRefineLoading] =
+  useState(false);
+
+  // Auto-scrolls the output panel whenever new content lands -- covers
+  // initial generation, follow-up answers, and refine actions, since all
+  // three end up updating `result` (or image/caption state).
+  const outputEndRef = useRef(null);
+
+  useEffect(() => {
+    outputEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [result, caption, imageBase64]);
+
   const generateContent = async () => {
 
     if (!query.trim()) return;
@@ -61,11 +92,14 @@ export default function App() {
     setLoading(true);
 
     setResult("");
+    setImageBase64(null);
+    setCaption(null);
+    setHashtags([]);
 
     try {
 
       const response = await fetch(
-        "https://ai-agent-d7x5.onrender.com/generate",
+        `${API_BASE}/generate`,
         {
           method: "POST",
 
@@ -83,52 +117,109 @@ export default function App() {
         }
       );
 
-      const reader =
-        response.body.getReader();
+      // The backend returns plain JSON for IMAGE and CAPTION types, and a
+      // streamed text/plain body for everything else. Content-Type tells
+      // us which one we got, so we don't try to stream-decode an image.
+      const contentType =
+        response.headers.get("content-type") || "";
 
-      const decoder =
-        new TextDecoder();
+      let newChat = null;
 
-      let fullText = "";
+      if (contentType.includes("application/json")) {
 
-      while (true) {
+        const data = await response.json();
 
-        const {
-          done,
-          value
-        } = await reader.read();
+        if (data.type === "error" || data.error) {
+          alert(data.error || "Something went wrong.");
+          setLoading(false);
+          return;
+        }
 
-        if (done) break;
+        if (data.type === "image") {
 
-        const chunk =
-          decoder.decode(value);
+          setImageBase64(data.image_base64);
 
-        fullText += chunk;
+          newChat = {
+            query,
+            type: "image",
+            imageBase64: data.image_base64,
+            tone,
+            length,
+            language,
+          };
 
-        setResult(fullText);
+        } else if (data.type === "caption") {
+
+          setCaption(data.caption);
+          setHashtags(data.hashtags || []);
+
+          newChat = {
+            query,
+            type: "caption",
+            caption: data.caption,
+            hashtags: data.hashtags || [],
+            tone,
+            length,
+            language,
+          };
+
+        }
+
+      } else {
+
+        const reader =
+          response.body.getReader();
+
+        const decoder =
+          new TextDecoder();
+
+        let fullText = "";
+
+        while (true) {
+
+          const {
+            done,
+            value
+          } = await reader.read();
+
+          if (done) break;
+
+          const chunk =
+            decoder.decode(value);
+
+          fullText += chunk;
+
+          setResult(fullText);
+
+        }
+
+        newChat = {
+          query,
+          type: "text",
+          response: fullText,
+          tone,
+          length,
+          language,
+        };
 
       }
 
-      const newChat = {
-         query,
-         response: fullText,
-         tone,
-         length,
-         language,
-      };
+      if (newChat) {
 
-       const updatedHistory = [
-         newChat,
+        const updatedHistory = [
+          newChat,
           ...history.filter(
             (item) => item.query !== query),
-       ];
+        ];
 
-      setHistory(updatedHistory);
+        setHistory(updatedHistory);
 
-      localStorage.setItem(
-         "chatHistory",
-         JSON.stringify(updatedHistory)
-      );
+        localStorage.setItem(
+          "chatHistory",
+          JSON.stringify(updatedHistory)
+        );
+
+      }
 
     } catch (err) {
 
@@ -145,12 +236,14 @@ export default function App() {
   };
   const askFollowup = async () => {
 
-  if (!followup.trim()) return;
+  if (!followup.trim() || followupLoading) return;
+
+  setFollowupLoading(true);
 
   try {
 
     const response = await fetch(
-      "https://ai-agent-d7x5.onrender.com/followup",
+      `${API_BASE}/followup`,
       {
         method: "POST",
 
@@ -167,14 +260,37 @@ export default function App() {
 
     const data = await response.json();
 
-    setResult(
+    
+  const updatedResult =
   result +
   "\n\n---\n\n" +
   "### Question\n" +
   followup +
   "\n\n" +
   "### Answer\n" +
-  data.output
+  data.output;
+
+setResult(updatedResult);
+const updatedHistory = history.map((item) => {
+
+  if (item.query === query) {
+
+    return {
+      ...item,
+      response: updatedResult,
+    };
+
+  }
+
+  return item;
+
+});
+
+setHistory(updatedHistory);
+
+localStorage.setItem(
+  "chatHistory",
+  JSON.stringify(updatedHistory)
 );
 
     setFollowup("");
@@ -183,17 +299,25 @@ export default function App() {
 
     console.error(err);
 
+    alert("Failed to get an answer. Please try again.");
+
   }
+
+  setFollowupLoading(false);
 
 };
 
 
 const refineContent = async (action) => {
 
+  if (refineLoading) return;
+
+  setRefineLoading(true);
+
   try {
 
     const response = await fetch(
-      "https://ai-agent-d7x5.onrender.com/refine",
+      `${API_BASE}/refine`,
       {
         method: "POST",
 
@@ -210,26 +334,59 @@ const refineContent = async (action) => {
 
     const data = await response.json();
 
-    setResult(
+    
+  const updatedResult =
   result +
   "\n\n---\n\n" +
   "### Action: " +
   action +
   "\n\n" +
-  data.output
+  data.output;
+
+setResult(updatedResult);
+const updatedHistory = history.map((item) => {
+
+  if (item.query === query) {
+
+    return {
+      ...item,
+      response: updatedResult,
+    };
+
+  }
+
+  return item;
+
+});
+
+setHistory(updatedHistory);
+
+localStorage.setItem(
+  "chatHistory",
+  JSON.stringify(updatedHistory)
 );
 
   } catch (err) {
 
     console.error(err);
 
+    alert("Failed to refine content. Please try again.");
+
   }
+
+  setRefineLoading(false);
 
 };
   const copyContent = () => {
 
+    const textToCopy = caption
+      ? `${caption}\n\n${hashtags.join(" ")}`
+      : result;
+
+    if (!textToCopy) return;
+
     navigator.clipboard.writeText(
-      result
+      textToCopy
     );
 
   };
@@ -319,6 +476,9 @@ const refineContent = async (action) => {
 
     setQuery("");
     setResult("");
+    setImageBase64(null);
+    setCaption(null);
+    setHashtags([]);
 
   }}
 >
@@ -373,10 +533,15 @@ const refineContent = async (action) => {
   className="history-card"
   onClick={() => {
     setQuery(item.query);
-    setResult(item.response);
     setTone(item.tone);
     setLength(item.length);
     setLanguage(item.language);
+
+    // Restore whichever output type this history item was.
+    setResult(item.type === "text" ? item.response : "");
+    setImageBase64(item.type === "image" ? item.imageBase64 : null);
+    setCaption(item.type === "caption" ? item.caption : null);
+    setHashtags(item.type === "caption" ? item.hashtags || [] : []);
   }}
 >
 
@@ -628,7 +793,27 @@ const refineContent = async (action) => {
             <div className="output-content">
 
               {
-                result ? (
+                imageBase64 ? (
+
+                  <img
+                    src={`data:image/png;base64,${imageBase64}`}
+                    alt={query}
+                    style={{ maxWidth: "100%", borderRadius: "8px" }}
+                  />
+
+                ) : caption ? (
+
+                  <div className="caption-output">
+
+                    <p>{caption}</p>
+
+                    <p className="hashtags">
+                      {hashtags.join(" ")}
+                    </p>
+
+                  </div>
+
+                ) : result ? (
 
                   <ReactMarkdown>
                     {result}
@@ -646,35 +831,40 @@ const refineContent = async (action) => {
                 )
               }
 
+              <div ref={outputEndRef} />
+
             </div>
 
-            {result && (
+            {(result || caption) && (
 
   <>
     <div className="refine-actions">
 
       <button
+        disabled={refineLoading}
         onClick={() =>
           refineContent("Expand")
         }
       >
-        Expand
+        {refineLoading ? "Working..." : "Expand"}
       </button>
 
       <button
+        disabled={refineLoading}
         onClick={() =>
           refineContent("Rewrite")
         }
       >
-        Rewrite
+        {refineLoading ? "Working..." : "Rewrite"}
       </button>
 
       <button
+        disabled={refineLoading}
         onClick={() =>
           refineContent("Improve SEO")
         }
       >
-        Improve SEO
+        {refineLoading ? "Working..." : "Improve SEO"}
       </button>
 
     </div>
@@ -685,17 +875,24 @@ const refineContent = async (action) => {
         type="text"
         placeholder="Ask a follow-up question..."
         value={followup}
+        disabled={followupLoading}
         onChange={(e) =>
           setFollowup(
             e.target.value
           )
         }
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !followupLoading) {
+            askFollowup();
+          }
+        }}
       />
 
       <button
         onClick={askFollowup}
+        disabled={followupLoading}
       >
-        Ask
+        {followupLoading ? "Asking..." : "Ask"}
       </button>
 
     </div>
