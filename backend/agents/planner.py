@@ -64,6 +64,34 @@ def planner(state):
         state["content_type"] = "BLOG"
         state["error"] = "Empty request."
         return state
+    # ---------- High-confidence keyword checks ----------
+
+# Caption + hashtags
+    if (
+    "caption" in query
+    and ("hashtag" in query or "hashtags" in query)
+):
+      state["content_type"] = "CAPTION"
+      state["error"] = None
+      return state
+
+# Hashtags only
+    if (
+    "hashtag" in query
+    or "hashtags" in query
+):
+      state["content_type"] = "HASHTAGS"
+      state["error"] = None
+      return state
+
+# Caption only
+    if (
+    "caption" in query
+    or "instagram caption" in query
+):
+      state["content_type"] = "CAPTION"
+      state["error"] = None
+      return state
 
     try:
         response = llm.invoke(CLASSIFY_PROMPT.format(query=query))
