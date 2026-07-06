@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Creative Content Agent — Proof of Concept</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #6c47ff;
+      --primary-light: #8b6bff;
+      --accent: #00d4aa;
+      --dark: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --border: #2a2a4a;
+      --text: #e8e8f0;
+      --text-muted: #9090b0;
+      --text-dim: #6060a0;
+      --white: #ffffff;
+      --gradient: linear-gradient(135deg, #6c47ff 0%, #00d4aa 100%);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── COVER PAGE ── */
+    .cover {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 60px 40px;
+      background: var(--dark);
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+    }
+
+    .cover::before {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(108,71,255,0.18) 0%, transparent 70%);
+      top: -200px; left: -200px;
+    }
+    .cover::after {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,212,170,0.12) 0%, transparent 70%);
+      bottom: -200px; right: -200px;
+    }
+
+    .cover-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(108,71,255,0.15);
+      border: 1px solid rgba(108,71,255,0.4);
+      color: var(--primary-light);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 8px 20px;
+      border-radius: 100px;
+      margin-bottom: 36px;
+      position: relative; z-index: 1;
+    }
+
+    .cover-logo {
+      width: 90px; height: 90px;
+      background: var(--gradient);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin: 0 auto 36px;
+      position: relative; z-index: 1;
+      box-shadow: 0 20px 60px rgba(108,71,255,0.4);
+    }
+
+    .cover h1 {
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      position: relative; z-index: 1;
+      letter-spacing: -1px;
+    }
+
+    .cover h1 span {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .cover-subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 580px;
+      margin: 0 auto 56px;
+      font-weight: 400;
+      position: relative; z-index: 1;
+    }
+
+    .cover-meta {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      position: relative; z-index: 1;
+    }
+
+    .cover-meta-item {
+      text-align: center;
+    }
+
+    .cover-meta-item .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .cover-meta-item .value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .cover-divider {
+      width: 1px;
+      background: var(--border);
+      height: 40px;
+      align-self: center;
+    }
+
+    /* ── PAGES ── */
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 64px 56px;
+      page-break-inside: avoid;
+    }
+
+    .page + .page {
+      border-top: 1px solid var(--border);
+      page-break-before: always;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+
+    .section-icon {
+      width: 42px; height: 42px;
+      background: var(--gradient);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .section-number {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--primary-light);
+      margin-bottom: 4px;
+    }
+
+    /* ── OVERVIEW CARDS ── */
+    .overview-text {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin-bottom: 40px;
+      background: rgba(255,255,255,0.03);
+      border-left: 3px solid var(--primary);
+      padding: 20px 24px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: rgba(108,71,255,0.08);
+      border: 1px solid rgba(108,71,255,0.2);
+      border-radius: 14px;
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .stat-card .stat-num {
+      font-size: 36px;
+      font-weight: 800;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ── CONTENT TYPE CARDS ── */
+    .content-type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+
+    .content-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      transition: border-color 0.2s;
+    }
+
+    .content-card:hover { border-color: var(--primary); }
+
+    .content-card-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .content-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--white);
+    }
+
+    .content-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── TABLE ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 32px;
+      font-size: 14px;
+    }
+
+    thead tr {
+      background: rgba(108,71,255,0.12);
+      border-bottom: 2px solid rgba(108,71,255,0.3);
+    }
+
+    thead th {
+      padding: 14px 16px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--primary-light);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody tr:nth-child(even) {
+      background: rgba(255,255,255,0.02);
+    }
+
+    tbody td {
+      padding: 13px 16px;
+      color: var(--text);
+    }
+
+    tbody td:first-child {
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    /* ── CODE ── */
+    .code-block {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-lang {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .code-dots span {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .code-dots span:nth-child(1) { background: #ff5f57; }
+    .code-dots span:nth-child(2) { background: #febc2e; }
+    .code-dots span:nth-child(3) { background: #28c840; }
+
+    pre {
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #a9c7ff;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    pre .key { color: #79b8ff; }
+    pre .val { color: #9ecbff; }
+    pre .str { color: #85e89d; }
+    pre .comment { color: #6a737d; }
+
+    /* ── PIPELINE ── */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin: 36px 0;
+      flex-wrap: nowrap;
+    }
+
+    .pipeline-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .pipeline-box {
+      background: var(--gradient);
+      border-radius: 14px;
+      padding: 18px 28px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      min-width: 130px;
+      box-shadow: 0 8px 32px rgba(108,71,255,0.35);
+    }
+
+    .pipeline-desc {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 130px;
+      line-height: 1.4;
+    }
+
+    .pipeline-arrow {
+      font-size: 28px;
+      color: var(--primary);
+      padding: 0 12px;
+      padding-bottom: 24px;
+      flex-shrink: 0;
+    }
+
+    /* ── FEATURE LIST ── */
+    .feature-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 14px;
+    }
+
+    .feature-list li .bullet {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--gradient);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      margin-top: 1px;
+    }
+
+    .feature-list li .feat-title {
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 2px;
+    }
+
+    .feature-list li .feat-desc {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ── API ENDPOINT ── */
+    .endpoint {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: rgba(108,71,255,0.1);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .method-badge {
+      background: var(--gradient);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .endpoint-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .endpoint-desc {
+      padding: 14px 20px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ── ENV VAR TABLE ── */
+    .env-table td:first-child {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 56px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gradient);
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      body { background: var(--dark) !important; }
+      .cover { page-break-after: always; min-height: 100vh; }
+      .page + .page { page-break-before: always; }
+      @page { margin: 0; size: A4; }
+    }
+
+    /* ── INLINE CODE ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: rgba(108,71,255,0.15);
+      color: var(--primary-light);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .subsection-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--white);
+      margin: 32px 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ COVER ═══════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">✦ Proof of Concept</div>
+  <div class="cover-logo">🪄</div>
+  <h1>AI Creative<br><span>Content Agent</span></h1>
+  <p class="cover-subtitle">
+    A full-stack, multi-agent AI platform that classifies intent and generates
+    production-ready content — blogs, captions, scripts, slides, and more —
+    from a single natural-language prompt.
+  </p>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="label">Document Type</div>
+      <div class="value">Proof of Concept</div>
+    </div>
+    <div class="cover-divider"></div>
+    <div class="cover-meta-item">
+      <div class="label">Version</div>
+      <div class="value">0.1.0</div>
+    </div>
+    <div class="cover-divider"></div>
+    <div class="cover-meta-item">
+      <div class="label">Date</div>
+      <div class="value">July 2026</div>
+    </div>
+    <div class="cover-divider"></div>
+    <div class="cover-meta-item">
+      <div class="label">Status</div>
+      <div class="value" style="color:#00d4aa;">✓ Active</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE 1 — OVERVIEW ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">01 — Overview</div>
+  <div class="section-header">
+    <div class="section-icon">✦</div>
+    <h2>Project Overview</h2>
+  </div>
+
+  <div class="overview-text">
+    The AI Creative Content Agent is a production-ready, full-stack application that takes
+    a single free-form user prompt and autonomously determines what kind of content to create —
+    then generates it using a structured multi-agent pipeline. The result is a unified tool that
+    replaces multiple point solutions (blog writers, caption generators, hashtag tools,
+    script writers) with one intelligent interface.
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num">6</div>
+      <div class="stat-label">Content Types Supported</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">3</div>
+      <div class="stat-label">AI Agents in Pipeline</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">3</div>
+      <div class="stat-label">REST API Endpoints</div>
+    </div>
+  </div>
+
+  <div class="subsection-title">Problem Statement</div>
+  <p style="color:var(--text-muted); font-size:15px; line-height:1.8; margin-bottom:24px;">
+    Content creators, marketers, and businesses rely on multiple disconnected tools to produce
+    different content formats. This creates context-switching overhead, inconsistent tone/branding,
+    and high subscription costs. A single agent that understands intent and routes intelligently
+    eliminates this fragmentation.
+  </p>
+
+  <div class="subsection-title">Solution</div>
+  <p style="color:var(--text-muted); font-size:15px; line-height:1.8;">
+    A LangGraph-orchestrated pipeline with three specialized agents — <strong style="color:var(--white)">Planner</strong>,
+    <strong style="color:var(--white)">Writer</strong>, and <strong style="color:var(--white)">Reviewer</strong> —
+    backed by a FastAPI server and a React/Vite frontend. The system uses
+    LLM-based intent classification so natural phrasing like <em>"make me a reel"</em>
+    correctly routes to the video script generator without rigid keyword matching.
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE 2 — FEATURES ═══════════════════════ -->
+<div class="page">
+  <div class="section-number">02 — Features</div>
+  <div class="section-header">
+    <div class="section-icon">✨</div>
+    <h2>Features</h2>
+  </div>
+
+  <div class="subsection-title">Content Types</div>
+  <div class="content-type-grid">
+    <div class="content-card">
+      <div class="content-card-icon" style="background:rgba(108,71,255,0.15);">📝</div>
+      <div>
+        <h4>Blog Post</h4>
+        <p>Long-form markdown article with structured headings, sized Short (500–700 words), Medium (800–1200), or Long (1500–2500).</p>
+      </div>
+    </div>
+    <div class="content-card">
+      <div class="content-card-icon" style="background:rgba(0,212,170,0.12);">📸</div>
+      <div>
+        <h4>Social Caption</h4>
+        <p>Engaging social media caption with exactly 10 relevant hashtags, returned as structured JSON.</p>
+      </div>
+    </div>
+    <div class="content-card">
+      <div class="content-card-icon" style="background:rgba(255,180,0,0.12);">#</div>
+      <div>
+        <h4>Hashtags</h4>
+        <p>Standalone list of exactly 10 topic-relevant hashtags. Skips caption generation entirely.</p>
+      </div>
+    </div>
+    <div class="content-card">
+      <div class="content-card-icon" style="background:rgba(255,80,80,0.12);">🎬</div>
+      <div>
+        <h4>Video Script</h4>
+        <p>Short-form script structured as Hook → Main Content → CTA, ideal for Reels, TikToks, and YouTube Shorts.</p>
+      </div>
+    </div>
+    <div class="content-card">
+      <div class="content-card-icon" style="background:rgba(130,80,255,0.15);">📊</div>
+      <div>
+        <h4>Presentation</h4>
+        <p>Slide-by-slide markdown deck. Short = 5 slides, Medium = 8, Long = 12–15.</p>
+      </div>
+    </div>
+    <div class="content-card">
+      <div class="content-card-icon" style="background:rgba(0,180,255,0.12);">♻️</div>
+      <div>
+        <h4>Repurposing</h4>
+        <p>Transforms existing content into LinkedIn, Instagram, and Twitter/X posts simultaneously.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection-title">Generation Controls</div>
+  <table>
+    <thead>
+      <tr><th>Control</th><th>Options</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Tone</td><td>Professional · Creative · Casual</td><td>Shapes voice and writing style of the output</td></tr>
+      <tr><td>Length</td><td>Short · Medium · Long</td><td>Maps to concrete word / slide / line counts in the prompt</td></tr>
+      <tr><td>Language</td><td>English · Hindi · Spanish</td><td>Instructs the model to write in the selected language</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-title">Post-Generation Actions</div>
+  <ul class="feature-list">
+    <li>
+      <div class="bullet">💬</div>
+      <div>
+        <div class="feat-title">Follow-up Q&amp;A</div>
+        <div class="feat-desc">Ask contextual questions about generated content. Answers are appended inline.</div>
+      </div>
+    </li>
+    <li>
+      <div class="bullet">✏️</div>
+      <div>
+        <div class="feat-title">Refine</div>
+        <div class="feat-desc">One-click Expand, Rewrite, or Improve SEO actions on any text output.</div>
+      </div>
+    </li>
+    <li>
+      <div class="bullet">📋</div>
+      <div>
+        <div class="feat-title">Copy to Clipboard</div>
+        <div class="feat-desc">Copies text or caption + hashtags with a single click and toast confirmation.</div>
+      </div>
+    </li>
+    <li>
+      <div class="bullet">📜</div>
+      <div>
+        <div class="feat-title">Persistent History</div>
+        <div class="feat-desc">Past generations saved in localStorage; searchable and re-loadable at any time.</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE 3 — ARCHITECTURE ═══════════════════ -->
+<div class="page">
+  <div class="section-number">03 — Architecture</div>
+  <div class="section-header">
+    <div class="section-icon">🏗</div>
+    <h2>System Architecture</h2>
+  </div>
+
+  <div class="subsection-title">Agent Pipeline (LangGraph)</div>
+
+  <div class="pipeline">
+    <div class="pipeline-node">
+      <div class="pipeline-box">🧠 Planner</div>
+      <div class="pipeline-desc">LLM-based intent classification → content_type</div>
+    </div>
+    <div class="pipeline-arrow">▶</div>
+    <div class="pipeline-node">
+      <div class="pipeline-box">✍️ Writer</div>
+      <div class="pipeline-desc">Selects prompt template, calls Groq LLM</div>
+    </div>
+    <div class="pipeline-arrow">▶</div>
+    <div class="pipeline-node">
+      <div class="pipeline-box">🔍 Reviewer</div>
+      <div class="pipeline-desc">Polishes grammar &amp; readability (skipped for CAPTION, HASHTAGS)</div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <p style="color:var(--text-muted); font-size:14px; line-height:1.8; margin-bottom:12px;">
+      <strong style="color:var(--white)">Planner</strong> — Uses the LLM itself to classify intent, so
+      variations like <em>"make me a reel"</em> or <em>"I need a TikTok script"</em> both correctly
+      resolve to <code>VIDEO_SCRIPT</code>. A keyword-based fallback activates if the classification call fails,
+      ensuring zero crashes on API errors.
+    </p>
+    <p style="color:var(--text-muted); font-size:14px; line-height:1.8; margin-bottom:12px;">
+      <strong style="color:var(--white)">Writer</strong> — Selects the prompt template matching the
+      classified content type and invokes <code>llama-3.3-70b-versatile</code> on Groq at
+      <code>temperature=0.7</code>, <code>max_tokens=4096</code>.
+    </p>
+    <p style="color:var(--text-muted); font-size:14px; line-height:1.8;">
+      <strong style="color:var(--white)">Reviewer</strong> — Runs a prose-polish pass on text output.
+      Explicitly skipped for <code>CAPTION</code> and <code>HASHTAGS</code> to prevent corrupting
+      structured JSON or plain hashtag lists.
+    </p>
+  </div>
+
+  <div class="subsection-title">Project Structure</div>
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span></span><span></span><span></span></div>
+      <div class="code-lang">Directory Tree</div>
+    </div>
+    <pre>creative-content-agent/
+├── backend/                   # Python FastAPI service
+│   ├── main.py                # /generate  /followup  /refine
+│   ├── graph.py               # LangGraph workflow
+│   ├── state.py               # AgentState TypedDict
+│   ├── llm_client.py          # Shared Groq LLM client
+│   └── agents/
+│       ├── planner.py         # Intent → content_type
+│       ├── content.py         # Prompt builder + LLM call
+│       └── reviewer.py        # Prose polish pass
+└── frontend/                  # React 19 + Vite SPA
+    └── src/
+        ├── App.jsx            # Main app & state management
+        ├── Toast.jsx          # Toast notification system
+        └── LoadingSkeleton.jsx</pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE 4 — TECH STACK ═════════════════════ -->
+<div class="page">
+  <div class="section-number">04 — Tech Stack</div>
+  <div class="section-header">
+    <div class="section-icon">🛠</div>
+    <h2>Technology Stack</h2>
+  </div>
+
+  <div class="subsection-title">Backend</div>
+  <table>
+    <thead>
+      <tr><th>Technology</th><th>Version</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Python</td><td>3.11+</td><td>Runtime</td></tr>
+      <tr><td>FastAPI</td><td>≥ 0.136</td><td>REST API framework with async support</td></tr>
+      <tr><td>Uvicorn</td><td>≥ 0.47</td><td>ASGI server</td></tr>
+      <tr><td>LangGraph</td><td>≥ 1.2</td><td>Multi-agent workflow orchestration</td></tr>
+      <tr><td>LangChain</td><td>≥ 1.3</td><td>LLM abstraction &amp; prompt management</td></tr>
+      <tr><td>langchain-groq</td><td>latest</td><td>Groq LLM provider integration</td></tr>
+      <tr><td>Groq API</td><td>llama-3.3-70b-versatile</td><td>Text generation for all agents</td></tr>
+      <tr><td>Pydantic</td><td>v2</td><td>Request/response validation</td></tr>
+      <tr><td>python-dotenv</td><td>≥ 1.2</td><td>Environment variable loading</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-title">Frontend</div>
+  <table>
+    <thead>
+      <tr><th>Technology</th><th>Version</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>React</td><td>19</td><td>UI framework</td></tr>
+      <tr><td>Vite</td><td>8</td><td>Build tool &amp; dev server</td></tr>
+      <tr><td>lucide-react</td><td>≥ 1.17</td><td>Icon library</td></tr>
+      <tr><td>react-markdown</td><td>≥ 10</td><td>Markdown rendering (blogs, presentations)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-title">Key Design Decisions</div>
+  <ul class="feature-list">
+    <li>
+      <div class="bullet">⚡</div>
+      <div>
+        <div class="feat-title">Async execution</div>
+        <div class="feat-desc">LangGraph's blocking <code>invoke()</code> runs via <code>asyncio.to_thread()</code> so slow generations never stall concurrent requests.</div>
+      </div>
+    </li>
+    <li>
+      <div class="bullet">🌊</div>
+      <div>
+        <div class="feat-title">Streaming text responses</div>
+        <div class="feat-desc">Text output is chunked and streamed via <code>StreamingResponse</code>, giving real-time feel without WebSockets.</div>
+      </div>
+    </li>
+    <li>
+      <div class="bullet">🛡</div>
+      <div>
+        <div class="feat-title">Graceful degradation</div>
+        <div class="feat-desc">All agents have try/except blocks that preserve previous output instead of losing work on errors.</div>
+      </div>
+    </li>
+    <li>
+      <div class="bullet">🔒</div>
+      <div>
+        <div class="feat-title">Centralised LLM config</div>
+        <div class="feat-desc">Single <code>llm_client.py</code> keeps model, temperature, and max_tokens consistent across all agents.</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE 5 — API REFERENCE ═══════════════════ -->
+<div class="page">
+  <div class="section-number">05 — API Reference</div>
+  <div class="section-header">
+    <div class="section-icon">📡</div>
+    <h2>API Reference</h2>
+  </div>
+
+  <!-- /generate -->
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <div class="method-badge">POST</div>
+      <div class="endpoint-path">/generate</div>
+    </div>
+    <div class="endpoint-desc">
+      Runs the full agent pipeline and returns content. Automatically classifies the content type from the query.
+      Text responses are streamed; caption/hashtag responses are JSON.
+    </div>
+  </div>
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span></span><span></span><span></span></div>
+      <div class="code-lang">Request Body</div>
+    </div>
+    <pre>{
+  "query":    "Write a blog about remote work productivity",
+  "tone":     "Professional",   // Professional | Creative | Casual
+  "length":   "Medium",         // Short | Medium | Long
+  "language": "English"         // English | Hindi | Spanish
+}</pre>
+  </div>
+  <div class="code-block" style="margin-bottom:32px;">
+    <div class="code-header">
+      <div class="code-dots"><span></span><span></span><span></span></div>
+      <div class="code-lang">Response Variants</div>
+    </div>
+    <pre>// Text types  →  text/plain stream
+// Caption     →  {"type":"caption","caption":"...","hashtags":["#tag1",...]}
+// Error       →  {"type":"error","error":"..."}</pre>
+  </div>
+
+  <!-- /followup -->
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <div class="method-badge">POST</div>
+      <div class="endpoint-path">/followup</div>
+    </div>
+    <div class="endpoint-desc">
+      Answers a contextual question about previously generated content. The answer is returned as plain text
+      and the frontend appends it inline below the original output.
+    </div>
+  </div>
+  <div class="code-block" style="margin-bottom:32px;">
+    <div class="code-header">
+      <div class="code-dots"><span></span><span></span><span></span></div>
+      <div class="code-lang">Request / Response</div>
+    </div>
+    <pre>// Request
+{"content":"...generated content...","question":"Suggest some tools?"}
+
+// Response
+{"output":"Here are some recommended tools..."}</pre>
+  </div>
+
+  <!-- /refine -->
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <div class="method-badge">POST</div>
+      <div class="endpoint-path">/refine</div>
+    </div>
+    <div class="endpoint-desc">
+      Applies a transformation action to existing content. Supported actions: <code>Expand</code>, <code>Rewrite</code>, <code>Improve SEO</code>.
+    </div>
+  </div>
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span></span><span></span><span></span></div>
+      <div class="code-lang">Request / Response</div>
+    </div>
+    <pre>// Request
+{"content":"...existing content...","action":"Expand"}
+
+// Response
+{"output":"...refined content..."}</pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE 6 — SETUP ═════════════════════════ -->
+<div class="page">
+  <div class="section-number">06 — Setup &amp; Environment</div>
+  <div class="section-header">
+    <div class="section-icon">🚀</div>
+    <h2>Getting Started</h2>
+  </div>
+
+  <div class="subsection-title">Prerequisites</div>
+  <table style="margin-bottom:32px;">
+    <thead><tr><th>Requirement</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td>Python 3.11+</td><td>Required for the FastAPI backend</td></tr>
+      <tr><td>Node.js 18+</td><td>Required to run the Vite frontend</td></tr>
+      <tr><td>Groq API Key</td><td>Free tier available at console.groq.com</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-title">Backend Setup</div>
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span></span><span></span><span></span></div>
+      <div class="code-lang">bash</div>
+    </div>
+    <pre>cd backend
+
+# Install with uv (recommended)
+pip install uv && uv sync
+
+# Or with pip
+pip install -r requirements.txt
+
+# Start the server
+uvicorn main:app --reload
+# → http://localhost:8000</pre>
+  </div>
+
+  <div class="subsection-title">Frontend Setup</div>
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span></span><span></span><span></span></div>
+      <div class="code-lang">bash</div>
+    </div>
+    <pre>cd frontend
+npm install
+npm run dev
+# → http://localhost:5173</pre>
+  </div>
+
+  <div class="subsection-title">Environment Variables</div>
+  <table class="env-table">
+    <thead>
+      <tr><th>Variable</th><th>Required</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>GROQ_API_KEY</td>
+        <td style="color:#00d4aa; font-weight:700;">✓ Yes</td>
+        <td>Powers all text agents — planner, writer, reviewer, followup, refine</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="background:rgba(0,212,170,0.08); border:1px solid rgba(0,212,170,0.25); border-radius:10px; padding:16px 20px; margin-top:28px; font-size:14px; color:var(--text-muted); line-height:1.7;">
+    <strong style="color:#00d4aa;">ℹ Live Deployment</strong><br>
+    The frontend is pre-configured to point at the production backend at
+    <code>https://ai-agent-d7x5.onrender.com</code>. To switch to a local server,
+    update the <code>API_BASE</code> constant in <code>frontend/src/App.jsx</code>.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ FOOTER ══════════════════════════════════ -->
+<div class="footer">
+  <div class="footer-brand">
+    <div class="footer-dot"></div>
+    <span>AI Creative Content Agent — Proof of Concept</span>
+  </div>
+  <span>Version 0.1.0 &nbsp;·&nbsp; July 2026 &nbsp;·&nbsp; Confidential</span>
+</div>
+
+</body>
+</html>
