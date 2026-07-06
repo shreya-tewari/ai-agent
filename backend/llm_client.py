@@ -30,13 +30,23 @@ llm = ChatGroq(
 )
 
 # Single shared OpenAI client for image generation.
-# Passed explicitly (instead of relying on OpenAI()'s auto-detection) so a
-# missing/misnamed env var fails loudly here rather than inside a request.
+#
+# This is OPTIONAL at import time. Previously a missing OPENAI_API_KEY raised
+# a RuntimeError here, which crashed the entire app on boot -- meaning blogs,
+# captions, hashtags, presentations, etc. (none of which need OpenAI) were
+# also unavailable just because the image feature's key wasn't configured.
+#
+# Now: if the key is missing, we log a warning and set image_client to None.
+# Only the IMAGE content type (in agents/content.py) checks for None and
+# fails gracefully at request time, instead of the whole server refusing to start.
 _openai_key = os.getenv("OPENAI_API_KEY")
-if not _openai_key:
-    raise RuntimeError(
-        "OPENAI_API_KEY is not set. Add it to your .env file "
-        "(e.g. OPENAI_API_KEY=sk-...) -- required for image generation."
-    )
 
-image_client = OpenAI(api_key=_openai_key)
+if not _openai_key:
+    logger.warning(
+        "OPENAI_API_KEY is not set. Image generation will be unavailable, "
+        "but other content types (blog, caption, hashtags, video script, "
+        "presentation, repurposing) will work normally."
+    )
+    image_client = None
+else:
+    image_client = OpenAI(api_key=_openai_key)

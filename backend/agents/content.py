@@ -175,6 +175,20 @@ def _generate_image(state):
     IMAGE content type doesn't go through the text LLM at all — it calls
     an image generation model instead and returns base64 image data.
     """
+    # Guard: image_client is None if OPENAI_API_KEY wasn't configured.
+    # Fail gracefully here instead of crashing the whole server at import
+    # time (see llm_client.py for details).
+    if image_client is None:
+        logger.error("Image generation requested but OPENAI_API_KEY is not configured.")
+        state["image_base64"] = None
+        state["content"] = ""
+        state["error"] = (
+            "Image generation is not available: OPENAI_API_KEY is not configured "
+            "on the server. Other content types (blog, caption, hashtags, etc.) "
+            "are unaffected."
+        )
+        return state
+
     request = state.get("request", "")
     size_key = state.get("image_size", "Square")
     size = IMAGE_SIZES.get(size_key, IMAGE_SIZES["Square"])
